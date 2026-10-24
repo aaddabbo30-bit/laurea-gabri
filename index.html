@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Laurea Gabri</title>
+<link rel="preload" as="image" href="gabri.webp">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500&display=swap">
 <style>
-/* Layout: one centered column, a laurel-green "found it" header above a single phone-sized video */
+/* Layout: one centered column — spinning laurel sticker, headline, video, personal collection */
 :root {
   --bg: #12160f;
   --surface: #1c2218;
@@ -18,30 +19,60 @@
   --body: "DM Sans", system-ui, -apple-system, sans-serif;
   color-scheme: dark;
 }
+* { box-sizing: border-box; }
 html, body { min-height: 100%; }
-*{box-sizing:border-box}
 body {
-  background: var(--bg);
+  margin: 0;
+  background: radial-gradient(120% 60% at 50% 0%, #223019 0%, var(--bg) 60%) var(--bg);
   color: var(--fg);
   font-family: var(--body);
   font-size: 16px;
   line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: max(28px, env(safe-area-inset-top, 0px)) 40px;
-  margin: 0;
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) 40px;
+  overflow-x: hidden;
 }
-main { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+#leaves { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+main { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; position: relative; }
+
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+.sticker {
+  width: 170px; max-width: 46vw; aspect-ratio: 558 / 640;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.55));
+  -webkit-tap-highlight-color: transparent;
+}
+.sticker img { width: 100%; height: 100%; display: block; }
+.sticker .in { width: 100%; height: 100%; animation: drop 1.3s cubic-bezier(.2,.9,.25,1.15) both; }
+.sticker .float { width: 100%; height: 100%; animation: bob 3.2s ease-in-out 1.3s infinite; }
+.sticker.spin .float { animation: spin .9s cubic-bezier(.3,.1,.3,1); }
+@keyframes drop {
+  0% { transform: translateY(-120vh) rotate(-720deg) scale(.4); }
+  70% { transform: translateY(10px) rotate(8deg) scale(1.05); }
+  100% { transform: translateY(0) rotate(0) scale(1); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0) scale(1); }
+  50% { transform: rotate(200deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
 .eyebrow {
   font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--laurel); font-weight: 500;
+  color: var(--laurel); font-weight: 500; margin-top: 6px;
 }
 h1 {
   font-family: var(--display); font-weight: 800; font-size: clamp(30px, 8vw, 44px);
-  line-height: 1.05; margin: 4px 0 0; text-wrap: balance;
+  line-height: 1.05; margin: 0; text-wrap: balance;
 }
 h1 em { font-style: normal; color: var(--gold); }
 p { margin: 0; color: var(--muted); }
+.note { text-align: center; }
+
 .frame {
   background: var(--surface);
   border-radius: 18px;
@@ -49,9 +80,21 @@ p { margin: 0; color: var(--muted); }
   border: 1px solid color-mix(in srgb, var(--laurel) 30%, transparent);
 }
 video { display: block; width: 100%; max-height: 72vh; background: #000; }
-.counter {
-  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+
+.collection {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 14px 16px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--muted) 18%, transparent);
 }
+.collection .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.collection strong { font-family: var(--display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; }
+.collection strong span { color: var(--gold); }
+.collection small { color: var(--muted); font-size: 13px; }
+.bar { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--muted) 20%, transparent); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--laurel), var(--gold)); transition: width .8s ease; }
+.counter { display: flex; gap: 6px; flex-wrap: wrap; }
 .dot {
   width: 28px; height: 28px; border-radius: 50%;
   display: grid; place-items: center;
@@ -59,19 +102,38 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
   border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
   color: var(--muted);
 }
-.dot.on { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 500; }
-.hint { font-size: 14px; }
+.dot.found { background: color-mix(in srgb, var(--laurel) 25%, transparent); border-color: var(--laurel); color: var(--fg); }
+.dot.on { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 500; animation: pop .6s ease 1.2s both; }
+@keyframes pop { 0% { transform: scale(.4); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+.complete {
+  text-align: center; padding: 14px 16px; border-radius: 16px;
+  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
+  border: 1px solid var(--gold);
+}
+.complete b { display: block; font-family: var(--display); font-size: 20px; color: var(--gold); }
+.complete p { color: var(--fg); }
+
+.hint { font-size: 14px; text-align: center; }
 .gallery { display: flex; flex-direction: column; gap: 24px; }
 .item { display: flex; flex-direction: column; gap: 8px; }
 .item h2 {
   font-family: var(--display); font-weight: 500; font-size: 18px; margin: 0;
   color: var(--gold); font-variant-numeric: tabular-nums;
 }
+@media (prefers-reduced-motion: reduce) {
+  .sticker .in, .sticker .float, .dot.on { animation: none !important; }
+  #leaves { display: none; }
+}
 </style>
 </head>
 <body>
+<canvas id="leaves" aria-hidden="true"></canvas>
 <main>
-  <div>
+  <div class="hero">
+    <button class="sticker" id="sticker" type="button" aria-label="Fai girare Gabri">
+      <div class="in"><div class="float"><img src="gabri.webp" alt="Gabri con la corona d'alloro"></div></div>
+    </button>
     <div class="eyebrow" id="eyebrow">Laurea Gabri</div>
     <h1 id="headline">Hai trovato un <em>video segreto</em></h1>
   </div>
@@ -79,11 +141,23 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
   <div class="frame" id="frame" hidden>
     <video id="player" controls playsinline preload="auto"></video>
   </div>
+  <p class="hint" id="hint" hidden>Premi play e alza il volume.</p>
 
-  <p id="note">Ci sono altri QR nascosti in giro per la festa. Trovali tutti.</p>
+  <div class="complete" id="complete" hidden>
+    <b>Li hai trovati tutti!</b>
+    <p>Mostra questa schermata al laureato e reclama il tuo bonus.</p>
+  </div>
 
-  <div class="counter" id="counter" aria-label="Video da trovare"></div>
-  <p class="hint" id="hint">Premi play e alza il volume.</p>
+  <section class="collection" id="collection" aria-label="La tua collezione">
+    <div class="row">
+      <strong id="score">0 di 17</strong>
+      <small>la tua collezione</small>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="counter" id="counter"></div>
+  </section>
+
+  <p class="note" id="note"></p>
 
   <section class="gallery" id="gallery" hidden></section>
 </main>
@@ -91,42 +165,60 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
 <script>
 (function () {
   var TOTAL = 17;
-  var player = document.getElementById("player");
-  var frame = document.getElementById("frame");
-  var headline = document.getElementById("headline");
-  var eyebrow = document.getElementById("eyebrow");
-  var note = document.getElementById("note");
-  var hint = document.getElementById("hint");
-  var counter = document.getElementById("counter");
-  var gallery = document.getElementById("gallery");
+  var KEY = "laurea-gabri-trovati";
+  var $ = function (id) { return document.getElementById(id); };
+  var player = $("player"), frame = $("frame"), headline = $("headline"), eyebrow = $("eyebrow"),
+      note = $("note"), hint = $("hint"), counter = $("counter"), gallery = $("gallery"),
+      score = $("score"), bar = $("bar"), complete = $("complete"), sticker = $("sticker");
+
+  function loadFound() {
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]").filter(function (x) { return x >= 1 && x <= TOTAL; }); }
+    catch (e) { return []; }
+  }
+  function saveFound(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function renderCollection(found, current) {
+    counter.innerHTML = "";
+    for (var i = 1; i <= TOTAL; i++) {
+      var d = document.createElement("span");
+      d.className = "dot" + (i === current ? " on" : (found.indexOf(i) >= 0 ? " found" : ""));
+      d.textContent = i;
+      counter.appendChild(d);
+    }
+    score.innerHTML = "<span>" + found.length + "</span> di " + TOTAL;
+    setTimeout(function () { bar.style.width = (found.length / TOTAL * 100) + "%"; }, 300);
+    complete.hidden = found.length < TOTAL;
+  }
 
   function render() {
     var m = (location.hash || "").match(/^#v(\d{1,2})$/);
     var n = m ? parseInt(m[1], 10) : 0;
     if (n < 1 || n > TOTAL) n = 0;
-    counter.innerHTML = "";
-    for (var i = 1; i <= TOTAL; i++) {
-      var d = document.createElement("span");
-      d.className = "dot" + (i === n ? " on" : "");
-      d.textContent = i;
-      counter.appendChild(d);
-    }
+    var found = loadFound();
+
     if (n) {
+      var isNew = found.indexOf(n) < 0;
+      if (isNew) { found.push(n); saveFound(found); }
       eyebrow.textContent = "Laurea Gabri · Video " + n + " di " + TOTAL;
-      headline.innerHTML = "Hai trovato un <em>video segreto</em>";
+      headline.innerHTML = isNew ? "Hai trovato un <em>video segreto</em>" : "Questo l'avevi <em>già trovato</em>";
       player.src = "video/video" + n + ".mp4";
       frame.hidden = false;
       hint.hidden = false;
-      note.textContent = "Ci sono altri QR nascosti in giro per la festa. Trovali tutti.";
       gallery.hidden = true;
-      counter.hidden = false;
+      var left = TOTAL - found.length;
+      note.textContent = left > 0
+        ? "Mancano " + left + " video. Ci sono altri QR nascosti in giro per la festa."
+        : "";
+      note.hidden = left <= 0;
     } else {
       eyebrow.textContent = "Laurea Gabri";
       headline.innerHTML = "Tutti i <em>video segreti</em>";
       frame.hidden = true;
       hint.hidden = true;
-      counter.hidden = true;
       player.removeAttribute("src");
+      note.hidden = false;
       note.textContent = "Tutti i " + TOTAL + " video della festa in un posto solo.";
       if (!gallery.childElementCount) {
         for (var j = 1; j <= TOTAL; j++) {
@@ -149,9 +241,84 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
       }
       gallery.hidden = false;
     }
+    renderCollection(found, n);
   }
-  window.addEventListener("hashchange", render);
+
+  sticker.addEventListener("click", function () {
+    sticker.classList.remove("spin");
+    void sticker.offsetWidth;
+    sticker.classList.add("spin");
+    burst(28);
+  });
+  sticker.addEventListener("animationend", function (e) {
+    if (e.animationName === "spin") sticker.classList.remove("spin");
+  });
+
+  window.addEventListener("hashchange", function () { render(); window.scrollTo(0, 0); burst(60); });
   render();
+
+  /* Falling laurel leaves and gold confetti */
+  var canvas = $("leaves"), ctx = canvas.getContext("2d"), parts = [], running = false;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function resize() {
+    var r = window.devicePixelRatio || 1;
+    canvas.width = innerWidth * r; canvas.height = innerHeight * r;
+    ctx.setTransform(r, 0, 0, r, 0, 0);
+  }
+  resize(); window.addEventListener("resize", resize);
+  var greens = ["#6f9a3a", "#8ab54a", "#5c8530", "#a3c95e"];
+  var golds = ["#e8c45a", "#f2d77e", "#d9a93c"];
+  function burst(count) {
+    if (reduce) return;
+    for (var i = 0; i < count; i++) {
+      var leaf = Math.random() < 0.7;
+      parts.push({
+        x: Math.random() * innerWidth,
+        y: -20 - Math.random() * innerHeight * 0.6,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: 1.2 + Math.random() * 1.8,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 0.08,
+        sway: Math.random() * Math.PI * 2,
+        size: leaf ? 10 + Math.random() * 10 : 4 + Math.random() * 4,
+        leaf: leaf,
+        color: leaf ? greens[i % greens.length] : golds[i % golds.length]
+      });
+    }
+    if (!running) { running = true; requestAnimationFrame(tick); }
+  }
+  function drawLeaf(p) {
+    var s = p.size;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s);
+    ctx.quadraticCurveTo(s * 0.55, 0, 0, s);
+    ctx.quadraticCurveTo(-s * 0.55, 0, 0, -s);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.25)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, -s * 0.9); ctx.lineTo(0, s * 0.9); ctx.stroke();
+  }
+  function tick() {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.sway += 0.03;
+      p.x += p.vx + Math.sin(p.sway) * 0.8;
+      p.y += p.vy;
+      p.rot += p.vr;
+      if (p.y > innerHeight + 30) { parts.splice(i, 1); continue; }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      if (p.leaf) drawLeaf(p);
+      else { ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6); }
+      ctx.restore();
+    }
+    if (parts.length) requestAnimationFrame(tick);
+    else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+  burst(90);
 })();
 </script>
 </body>
