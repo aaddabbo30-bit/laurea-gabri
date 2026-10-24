@@ -121,29 +121,53 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
   50% { box-shadow: 0 0 22px 2px color-mix(in srgb, var(--gold) 45%, transparent); }
 }
 
-/* Dress-up: big sticker face, every tap adds an anime / kawaii accessory */
-#dress {
+/* Hero sticker dress-up: every tap adds an anime / kawaii accessory */
+.sticker .face { position: relative; width: 100%; height: 100%; }
+.sticker .face img, .sticker .face svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.sticker .face.boing { animation: boing .45s ease; }
+@keyframes boing { 0% { transform: scale(1); } 35% { transform: scale(1.08, .92); } 70% { transform: scale(.96, 1.04); } 100% { transform: scale(1); } }
+.sticker .acc { transform-box: fill-box; transform-origin: center; animation: accIn .5s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes accIn { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.tap-hint { font-size: 12px; color: var(--muted); margin-top: -2px; }
+
+/* Manga book viewer */
+#book {
   position: fixed; inset: 0; z-index: 15;
-  background: radial-gradient(80% 60% at 50% 45%, #3a2a4a 0%, #14101c 75%);
+  background: radial-gradient(90% 70% at 50% 40%, #2a2420 0%, #0c0b0a 80%);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
   padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  animation: bookIn .5s ease both;
 }
-#dress .face {
-  position: relative; width: min(80vw, 56vh); aspect-ratio: 558 / 640;
-  cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+@keyframes bookIn { from { opacity: 0; } to { opacity: 1; } }
+.stage { perspective: 2200px; width: min(88vw, calc((100vh - 200px) * 0.707)); aspect-ratio: 1600 / 2272; position: relative; }
+.page {
+  position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d;
+  transition: transform 1.1s cubic-bezier(.45,.05,.25,1); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-#dress .face img, #dress .face svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-#dress .face.boing { animation: boing .45s ease; }
-@keyframes boing { 0% { transform: scale(1); } 35% { transform: scale(1.06, .94); } 70% { transform: scale(.97, 1.03); } 100% { transform: scale(1); } }
-#dress .acc { transform-box: fill-box; transform-origin: center; animation: accIn .5s cubic-bezier(.3,1.6,.5,1) both; }
-@keyframes accIn { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
-#dress .tip { color: #f3e9ff; font-family: var(--display); font-weight: 800; font-size: 20px; text-align: center; }
-#dress .tip small { display: block; font-family: var(--body); font-weight: 400; font-size: 14px; color: #c9b8dd; }
-#dressClose {
+.page .side { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 3px 8px 8px 3px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,.6); }
+.page .side img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.page .back { transform: rotateY(180deg); background: #e9e3d6; }
+.page .side::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.28), rgba(0,0,0,0) 7%); pointer-events: none; }
+.page.flipped { transform: rotateY(-178deg); }
+.page .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.4)); opacity: 0; transition: opacity 1.1s; pointer-events: none; }
+.page.flipping .shade { opacity: 1; }
+.book-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.book-bar button {
+  font: 500 15px var(--body); color: var(--fg); cursor: pointer;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px; padding: 10px 16px; min-height: 44px;
+}
+.book-bar button:disabled { opacity: .35; cursor: default; }
+.book-bar .save { background: var(--gold); color: #1a1408; border-color: var(--gold); font-weight: 700; }
+.book-count { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: center; }
+.book-msg { color: var(--muted); font-size: 13px; min-height: 1.3em; text-align: center; max-width: 340px; }
+#bookClose {
   position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
-  width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; z-index: 2;
   background: rgba(255,255,255,.14); color: #fff; font-size: 24px; line-height: 44px;
 }
+.complete small { display: block; color: var(--fg); font-size: 14px; margin-top: 2px; }
 
 .hint { font-size: 14px; text-align: center; }
 .gallery { display: flex; flex-direction: column; gap: 24px; }
@@ -174,19 +198,34 @@ body.intro .sticker .in { animation-play-state: paused; }
 <body>
 <canvas id="leaves" aria-hidden="true"></canvas>
 <div id="intro" hidden><img id="introImg" alt=""></div>
-<div id="dress" hidden>
-  <button id="dressClose" type="button" aria-label="Chiudi">&times;</button>
-  <div class="face" id="face" role="button" aria-label="Tocca per aggiungere un accessorio">
-    <img src="gabri.webp" alt="Gabri">
-    <svg id="accs" viewBox="0 0 558 640" aria-hidden="true"></svg>
+<div id="book" hidden>
+  <button id="bookClose" type="button" aria-label="Chiudi">&times;</button>
+  <div class="stage" id="stage">
+    <div class="page" id="pg1">
+      <div class="side front"><img src="manga/pagina.jpg" alt="Pagina manga"></div>
+      <div class="side back"></div>
+    </div>
+    <div class="page" id="pg0">
+      <div class="side front"><img src="manga/copertina.jpg" alt="Copertina del manga"><div class="shade"></div></div>
+      <div class="side back"></div>
+    </div>
   </div>
-  <div class="tip" id="dressTip">Tocca la faccia!<small>Ogni tocco aggiunge qualcosa</small></div>
+  <div class="book-bar">
+    <button type="button" id="prevPg" aria-label="Pagina precedente">&lsaquo; Indietro</button>
+    <span class="book-count" id="pgCount">1 / 2</span>
+    <button type="button" id="nextPg" aria-label="Pagina successiva">Sfoglia &rsaquo;</button>
+  </div>
+  <div class="book-bar">
+    <button type="button" class="save" id="savePg">Salva copertina in galleria</button>
+  </div>
+  <div class="book-msg" id="bookMsg">Tocca la pagina per sfogliare</div>
 </div>
 <main>
   <div class="hero">
-    <button class="sticker" id="sticker" type="button" aria-label="Fai girare Gabri">
-      <div class="in"><div class="float"><img src="gabri.webp" alt="Gabri con la corona d'alloro"></div></div>
+    <button class="sticker" id="sticker" type="button" aria-label="Tocca Gabri per aggiungere un accessorio">
+      <div class="in"><div class="float"><div class="face" id="face"><img src="gabri.webp" alt="Gabri con la corona d'alloro"><svg id="accs" viewBox="0 0 558 640" aria-hidden="true"></svg></div></div></div>
     </button>
+    <div class="tap-hint">Tocca Gabri</div>
     <div class="eyebrow" id="eyebrow">Laurea Gabri</div>
     <h1 id="headline">Hai trovato un <em>video segreto</em></h1>
   </div>
@@ -198,6 +237,7 @@ body.intro .sticker .in { animation-play-state: paused; }
 
   <button class="complete" id="complete" type="button" hidden>
     <b>Li hai trovati tutti!</b>
+    <small>Apri il manga</small>
   </button>
 
   <section class="collection" id="collection" aria-label="La tua collezione">
@@ -300,15 +340,6 @@ body.intro .sticker .in { animation-play-state: paused; }
     renderCollection(found, n);
   }
 
-  sticker.addEventListener("click", function () {
-    sticker.classList.remove("spin");
-    void sticker.offsetWidth;
-    sticker.classList.add("spin");
-    burst(28);
-  });
-  sticker.addEventListener("animationend", function (e) {
-    if (e.animationName === "spin") sticker.classList.remove("spin");
-  });
 
   /* Intro GIF after a QR scan, then the page opens by itself */
   var intro = $("intro"), introImg = $("introImg"), INTRO_MS = 2850;
@@ -425,7 +456,7 @@ body.intro .sticker .in { animation-play-state: paused; }
     else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
   }
   /* Dress-up game behind the "Li hai trovati tutti!" banner */
-  var dress = $("dress"), face = $("face"), accs = $("accs"), dressTip = $("dressTip");
+  var face = $("face"), accs = $("accs");
 
   function star(cx, cy, r, c) {
     var pts = [];
@@ -495,25 +526,76 @@ body.intro .sticker .in { animation-play-state: paused; }
   function drawAccs() {
     accs.innerHTML = LAYERS.map(function (sl) { return worn[sl] ? A[worn[sl]] : ""; }).join("");
   }
-  function openDress() {
-    step = 0; worn = {}; drawAccs();
-    dressTip.innerHTML = "Tocca la faccia!<small>Ogni tocco aggiunge qualcosa</small>";
-    dress.hidden = false;
-    burst(40);
-  }
-  face.addEventListener("click", function () {
+  sticker.addEventListener("click", function () {
     if (step >= ORDER.length) { step = 0; worn = {}; }
     var k = ORDER[step++];
     worn[SLOT[k]] = k;
     drawAccs();
     face.classList.remove("boing"); void face.offsetWidth; face.classList.add("boing");
-    dressTip.innerHTML = step >= ORDER.length
-      ? "Capolavoro!<small>Tocca ancora per ricominciare</small>"
-      : "Ancora!<small>" + step + " di " + ORDER.length + "</small>";
+    burst(14);
   });
-  $("dressClose").addEventListener("click", function () { dress.hidden = true; });
-  complete.addEventListener("click", openDress);
 
+  /* Manga book: cover + page, flip animation, save to gallery */
+  var book = $("book"), pg0 = $("pg0"), pgCount = $("pgCount"), prevPg = $("prevPg"), nextPg = $("nextPg"),
+      savePg = $("savePg"), bookMsg = $("bookMsg"), stage = $("stage"), cur = 0;
+  var FILES = [
+    { src: "manga/copertina.jpg", name: "Laurea_Gabri_copertina.jpg" },
+    { src: "manga/pagina.jpg", name: "Laurea_Gabri_manga.jpg" }
+  ];
+  function syncControls() {
+    pgCount.textContent = (cur + 1) + " / 2";
+    prevPg.disabled = cur === 0; nextPg.disabled = cur === 1;
+    savePg.textContent = cur === 0 ? "Salva copertina in galleria" : "Salva in galleria";
+  }
+  function setPage(n) {
+    if (n === cur) return;
+    cur = n;
+    pg0.classList.add("flipping");
+    pg0.classList.toggle("flipped", cur === 1);
+    setTimeout(function () { pg0.classList.remove("flipping"); }, 1100);
+    syncControls();
+    bookMsg.textContent = "";
+  }
+  function openBook() {
+    cur = 0; pg0.classList.remove("flipped");
+    syncControls();
+    bookMsg.textContent = "Tocca la pagina per sfogliare";
+    book.hidden = false; burst(40);
+  }
+  stage.addEventListener("click", function () { setPage(cur === 0 ? 1 : 0); });
+  prevPg.addEventListener("click", function () { setPage(0); });
+  nextPg.addEventListener("click", function () { setPage(1); });
+  $("bookClose").addEventListener("click", function () { book.hidden = true; });
+  var sx = null;
+  stage.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener("touchend", function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 40) { e.preventDefault(); setPage(dx < 0 ? 1 : 0); }
+  });
+  savePg.addEventListener("click", function () {
+    var f = FILES[cur];
+    bookMsg.textContent = "Preparo l'immagine...";
+    fetch(f.src).then(function (r) { return r.blob(); }).then(function (blob) {
+      var file = null;
+      try { file = new File([blob], f.name, { type: "image/jpeg" }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file] }).then(function () {
+          bookMsg.textContent = "Fatto! Se te lo chiede, scegli “Salva immagine”.";
+        });
+      }
+      var url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      bookMsg.textContent = "Immagine scaricata. Se non la trovi, tieni premuto sulla pagina e scegli “Salva immagine”.";
+    }).catch(function (err) {
+      if (err && err.name === "AbortError") { bookMsg.textContent = ""; return; }
+      bookMsg.textContent = "Non riesco a salvarla da qui: tieni premuto sulla pagina e scegli “Salva immagine”.";
+    });
+  });
+  complete.addEventListener("click", openBook);
+
+  /*BOOT*/
   if (hasVideoHash()) playIntro(afterIntro);
   else burst(45);
 })();
