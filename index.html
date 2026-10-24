@@ -20,6 +20,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { min-height: 100%; }
 body {
   margin: 0;
@@ -121,6 +122,21 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
   font-family: var(--display); font-weight: 500; font-size: 18px; margin: 0;
   color: var(--gold); font-variant-numeric: tabular-nums;
 }
+#intro {
+  position: fixed; inset: 0; z-index: 20;
+  background: var(--bg);
+  display: grid; place-items: center;
+  padding: 24px;
+  transition: opacity .45s ease, transform .45s ease;
+}
+#intro img {
+  width: auto; height: auto; max-width: 100%; max-height: 82vh;
+  min-height: 55vh; object-fit: contain;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.6);
+}
+#intro.out { opacity: 0; transform: scale(1.08); pointer-events: none; }
+body.intro .sticker .in { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
   .sticker .in, .sticker .float, .dot.on { animation: none !important; }
   #leaves { display: none; }
@@ -129,6 +145,7 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
 </head>
 <body>
 <canvas id="leaves" aria-hidden="true"></canvas>
+<div id="intro" hidden><img id="introImg" alt=""></div>
 <main>
   <div class="hero">
     <button class="sticker" id="sticker" type="button" aria-label="Fai girare Gabri">
@@ -164,15 +181,18 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
 
 <script>
 (function () {
-  var TOTAL = 17;
+  /* Video ids match the printed QR codes (#v1, #v3, ...); labels shown to guests are 1..TOTAL */
+  var IDS = [1, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+  var TOTAL = IDS.length;
   var KEY = "laurea-gabri-trovati";
+  function label(id) { return IDS.indexOf(id) + 1; }
   var $ = function (id) { return document.getElementById(id); };
   var player = $("player"), frame = $("frame"), headline = $("headline"), eyebrow = $("eyebrow"),
       note = $("note"), hint = $("hint"), counter = $("counter"), gallery = $("gallery"),
       score = $("score"), bar = $("bar"), complete = $("complete"), sticker = $("sticker");
 
   function loadFound() {
-    try { return JSON.parse(localStorage.getItem(KEY) || "[]").filter(function (x) { return x >= 1 && x <= TOTAL; }); }
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]").filter(function (x) { return IDS.indexOf(x) >= 0; }); }
     catch (e) { return []; }
   }
   function saveFound(list) {
@@ -181,12 +201,12 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
 
   function renderCollection(found, current) {
     counter.innerHTML = "";
-    for (var i = 1; i <= TOTAL; i++) {
+    IDS.forEach(function (id) {
       var d = document.createElement("span");
-      d.className = "dot" + (i === current ? " on" : (found.indexOf(i) >= 0 ? " found" : ""));
-      d.textContent = i;
+      d.className = "dot" + (id === current ? " on" : (found.indexOf(id) >= 0 ? " found" : ""));
+      d.textContent = label(id);
       counter.appendChild(d);
-    }
+    });
     score.innerHTML = "<span>" + found.length + "</span> di " + TOTAL;
     setTimeout(function () { bar.style.width = (found.length / TOTAL * 100) + "%"; }, 300);
     complete.hidden = found.length < TOTAL;
@@ -195,13 +215,13 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
   function render() {
     var m = (location.hash || "").match(/^#v(\d{1,2})$/);
     var n = m ? parseInt(m[1], 10) : 0;
-    if (n < 1 || n > TOTAL) n = 0;
+    if (IDS.indexOf(n) < 0) n = 0;
     var found = loadFound();
 
     if (n) {
       var isNew = found.indexOf(n) < 0;
       if (isNew) { found.push(n); saveFound(found); }
-      eyebrow.textContent = "Laurea Gabri · Video " + n + " di " + TOTAL;
+      eyebrow.textContent = "Laurea Gabri · Video " + label(n) + " di " + TOTAL;
       headline.innerHTML = isNew ? "Hai trovato un <em>video segreto</em>" : "Questo l'avevi <em>già trovato</em>";
       player.src = "video/video" + n + ".mp4";
       frame.hidden = false;
@@ -221,11 +241,11 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
       note.hidden = false;
       note.textContent = "Tutti i " + TOTAL + " video della festa in un posto solo.";
       if (!gallery.childElementCount) {
-        for (var j = 1; j <= TOTAL; j++) {
+        IDS.forEach(function (j) {
           var item = document.createElement("div");
           item.className = "item";
           var h = document.createElement("h2");
-          h.textContent = "Video " + j;
+          h.textContent = "Video " + label(j);
           var f = document.createElement("div");
           f.className = "frame";
           var v = document.createElement("video");
@@ -237,7 +257,7 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
           item.appendChild(h);
           item.appendChild(f);
           gallery.appendChild(item);
-        }
+        });
       }
       gallery.hidden = false;
     }
@@ -254,7 +274,38 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
     if (e.animationName === "spin") sticker.classList.remove("spin");
   });
 
-  window.addEventListener("hashchange", function () { render(); window.scrollTo(0, 0); burst(60); });
+  /* Intro GIF after a QR scan, then the page opens by itself */
+  var intro = $("intro"), introImg = $("introImg"), INTRO_MS = 2850;
+  function playIntro(done) {
+    document.body.classList.add("intro");
+    intro.classList.remove("out");
+    intro.hidden = false;
+    var finished = false, started = false, t;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      clearTimeout(t);
+      intro.classList.add("out");
+      document.body.classList.remove("intro");
+      done();
+      setTimeout(function () { intro.hidden = true; introImg.removeAttribute("src"); }, 500);
+    }
+    function start() { if (started) return; started = true; clearTimeout(t); t = setTimeout(finish, INTRO_MS); }
+    introImg.onload = start;
+    introImg.onerror = finish;
+    intro.onclick = finish;
+    t = setTimeout(finish, 6000); /* slow connection: never block the page */
+    introImg.src = "intro.gif?" + Date.now(); /* restart the GIF from frame one */
+  }
+  function hasVideoHash() {
+    var m = (location.hash || "").match(/^#v(\d{1,2})$/);
+    return !!m && IDS.indexOf(parseInt(m[1], 10)) >= 0;
+  }
+
+  window.addEventListener("hashchange", function () {
+    render(); window.scrollTo(0, 0);
+    if (hasVideoHash()) playIntro(function () { burst(45); }); else burst(45);
+  });
   render();
 
   /* Falling laurel leaves and gold confetti */
@@ -268,15 +319,17 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
   resize(); window.addEventListener("resize", resize);
   var greens = ["#6f9a3a", "#8ab54a", "#5c8530", "#a3c95e"];
   var golds = ["#e8c45a", "#f2d77e", "#d9a93c"];
+  var endAt = 0, FADE = 400;
   function burst(count) {
     if (reduce) return;
+    endAt = performance.now() + 1800;
     for (var i = 0; i < count; i++) {
       var leaf = Math.random() < 0.7;
       parts.push({
         x: Math.random() * innerWidth,
-        y: -20 - Math.random() * innerHeight * 0.6,
+        y: -20 - Math.random() * innerHeight * 0.3,
         vx: (Math.random() - 0.5) * 0.8,
-        vy: 1.2 + Math.random() * 1.8,
+        vy: 4 + Math.random() * 3,
         rot: Math.random() * Math.PI * 2,
         vr: (Math.random() - 0.5) * 0.08,
         sway: Math.random() * Math.PI * 2,
@@ -299,8 +352,11 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, -s * 0.9); ctx.lineTo(0, s * 0.9); ctx.stroke();
   }
-  function tick() {
+  function tick(now) {
     ctx.clearRect(0, 0, innerWidth, innerHeight);
+    var left = endAt + FADE - now;
+    if (left <= 0) parts.length = 0;
+    ctx.globalAlpha = Math.max(0, Math.min(1, left / FADE));
     for (var i = parts.length - 1; i >= 0; i--) {
       var p = parts[i];
       p.sway += 0.03;
@@ -318,7 +374,8 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
     if (parts.length) requestAnimationFrame(tick);
     else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
   }
-  burst(90);
+  if (hasVideoHash()) playIntro(function () { burst(45); });
+  else burst(45);
 })();
 </script>
 </body>
