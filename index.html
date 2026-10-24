@@ -120,23 +120,17 @@ video { display: block; width: 100%; max-height: 72vh; background: #000; }
 .item { display: flex; flex-direction: column; gap: 8px; }
 .item h2 {
   font-family: var(--display); font-weight: 500; font-size: 18px; margin: 0;
-  color: var(--fg); font-variant-numeric: tabular-nums;
-  display: flex; gap: 10px; align-items: baseline;
+  color: var(--gold); font-variant-numeric: tabular-nums;
 }
-.item h2 .num { color: var(--gold); font-weight: 800; min-width: 1.4em; }
-.found-msg { color: var(--gold); font-weight: 500; font-size: 15px; }
 #intro {
   position: fixed; inset: 0; z-index: 20;
-  background: var(--bg);
-  display: grid; place-items: center;
-  padding: 24px;
+  background: #000;
   transition: opacity .45s ease, transform .45s ease;
 }
 #intro img {
-  width: auto; height: auto; max-width: 100%; max-height: 82vh;
-  min-height: 55vh; object-fit: contain;
-  border-radius: 18px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.6);
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; max-width: none;
+  object-fit: cover;
 }
 #intro.out { opacity: 0; transform: scale(1.08); pointer-events: none; }
 body.intro .sticker .in { animation-play-state: paused; }
@@ -155,7 +149,6 @@ body.intro .sticker .in { animation-play-state: paused; }
       <div class="in"><div class="float"><img src="gabri.webp" alt="Gabri con la corona d'alloro"></div></div>
     </button>
     <div class="eyebrow" id="eyebrow">Laurea Gabri</div>
-    <p class="found-msg" id="vtitle" hidden></p>
     <h1 id="headline">Hai trovato un <em>video segreto</em></h1>
   </div>
 
@@ -186,30 +179,14 @@ body.intro .sticker .in { animation-play-state: paused; }
 <script>
 (function () {
   /* Video ids match the printed QR codes (#v1, #v3, ...); labels shown to guests are 1..TOTAL */
-  var IDS = [1, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+  var IDS = [1, 3, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17];
   var TOTAL = IDS.length;
   var KEY = "laurea-gabri-trovati";
   function label(id) { return IDS.indexOf(id) + 1; }
-  var TITLES = {
-    1: "L'ingresso trionfale",
-    3: "Missione Giappone",
-    6: "Il guerriero della realtà virtuale",
-    7: "Selfie andato storto",
-    8: "Cena ad alto rischio",
-    9: "Lo shot della sofferenza",
-    10: "Degustazione sospetta",
-    11: "Lavapiatti professionista",
-    12: "Lavapiatti, la vendetta",
-    13: "Occhiali da sole di notte",
-    14: "Servizio fotografico",
-    15: "Il re del mocio",
-    16: "Il fotografo misterioso",
-    17: "Natale con stile"
-  };
   var $ = function (id) { return document.getElementById(id); };
   var player = $("player"), frame = $("frame"), headline = $("headline"), eyebrow = $("eyebrow"),
       note = $("note"), hint = $("hint"), counter = $("counter"), gallery = $("gallery"),
-      score = $("score"), vtitle = $("vtitle"), bar = $("bar"), complete = $("complete"), sticker = $("sticker");
+      score = $("score"), bar = $("bar"), complete = $("complete"), sticker = $("sticker");
 
   function loadFound() {
     try { return JSON.parse(localStorage.getItem(KEY) || "[]").filter(function (x) { return IDS.indexOf(x) >= 0; }); }
@@ -242,9 +219,7 @@ body.intro .sticker .in { animation-play-state: paused; }
       var isNew = found.indexOf(n) < 0;
       if (isNew) { found.push(n); saveFound(found); }
       eyebrow.textContent = "Laurea Gabri · Video " + label(n) + " di " + TOTAL;
-      headline.textContent = TITLES[n];
-      vtitle.textContent = isNew ? "Hai trovato un video segreto" : "Questo l'avevi già trovato";
-      vtitle.hidden = false;
+      headline.innerHTML = isNew ? "Hai trovato un <em>video segreto</em>" : "Questo l'avevi <em>già trovato</em>";
       player.src = "video/video" + n + ".mp4";
       frame.hidden = false;
       hint.hidden = false;
@@ -257,7 +232,6 @@ body.intro .sticker .in { animation-play-state: paused; }
     } else {
       eyebrow.textContent = "Laurea Gabri";
       headline.innerHTML = "Tutti i <em>video segreti</em>";
-      vtitle.hidden = true;
       frame.hidden = true;
       hint.hidden = true;
       player.removeAttribute("src");
@@ -268,7 +242,7 @@ body.intro .sticker .in { animation-play-state: paused; }
           var item = document.createElement("div");
           item.className = "item";
           var h = document.createElement("h2");
-          h.innerHTML = "<span class=\"num\">" + label(j) + "</span> " + TITLES[j];
+          h.textContent = "Video " + label(j);
           var f = document.createElement("div");
           f.className = "frame";
           var v = document.createElement("video");
