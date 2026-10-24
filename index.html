@@ -201,8 +201,12 @@ body.intro .sticker .in { animation-play-state: paused; }
 <div id="book" hidden>
   <button id="bookClose" type="button" aria-label="Chiudi">&times;</button>
   <div class="stage" id="stage">
+    <div class="page" id="pg2">
+      <div class="side front"><img src="manga/kawaii.jpg" alt="Gabri-chan kawaii"></div>
+      <div class="side back"></div>
+    </div>
     <div class="page" id="pg1">
-      <div class="side front"><img src="manga/pagina.jpg" alt="Pagina manga"></div>
+      <div class="side front"><img src="manga/pagina.jpg" alt="Pagina manga"><div class="shade"></div></div>
       <div class="side back"></div>
     </div>
     <div class="page" id="pg0">
@@ -212,7 +216,7 @@ body.intro .sticker .in { animation-play-state: paused; }
   </div>
   <div class="book-bar">
     <button type="button" id="prevPg" aria-label="Pagina precedente">&lsaquo; Indietro</button>
-    <span class="book-count" id="pgCount">1 / 2</span>
+    <span class="book-count" id="pgCount">1 / 3</span>
     <button type="button" id="nextPg" aria-label="Pagina successiva">Sfoglia &rsaquo;</button>
   </div>
   <div class="book-bar">
@@ -536,42 +540,53 @@ body.intro .sticker .in { animation-play-state: paused; }
   });
 
   /* Manga book: cover + page, flip animation, save to gallery */
-  var book = $("book"), pg0 = $("pg0"), pgCount = $("pgCount"), prevPg = $("prevPg"), nextPg = $("nextPg"),
+  var book = $("book"), pgCount = $("pgCount"), prevPg = $("prevPg"), nextPg = $("nextPg"),
       savePg = $("savePg"), bookMsg = $("bookMsg"), stage = $("stage"), cur = 0;
+  var PAGES = [$("pg0"), $("pg1"), $("pg2")], N = PAGES.length;
   var FILES = [
-    { src: "manga/copertina.jpg", name: "Laurea_Gabri_copertina.jpg" },
-    { src: "manga/pagina.jpg", name: "Laurea_Gabri_manga.jpg" }
+    { src: "manga/copertina.jpg", name: "Laurea_Gabri_copertina.jpg", label: "Salva copertina in galleria" },
+    { src: "manga/pagina.jpg", name: "Laurea_Gabri_manga.jpg", label: "Salva in galleria" },
+    { src: "manga/kawaii.jpg", name: "Gabri_chan_kawaii.jpg", label: "Salva in galleria" }
   ];
+  function layout(moving) {
+    PAGES.forEach(function (pg, i) {
+      pg.classList.toggle("flipped", i < cur);
+      pg.style.zIndex = i === moving ? 3 * N : (i < cur ? i + 1 : 2 * N - i);
+    });
+  }
   function syncControls() {
-    pgCount.textContent = (cur + 1) + " / 2";
-    prevPg.disabled = cur === 0; nextPg.disabled = cur === 1;
-    savePg.textContent = cur === 0 ? "Salva copertina in galleria" : "Salva in galleria";
+    pgCount.textContent = (cur + 1) + " / " + N;
+    prevPg.disabled = cur === 0; nextPg.disabled = cur === N - 1;
+    savePg.textContent = FILES[cur].label;
   }
   function setPage(n) {
+    n = Math.max(0, Math.min(N - 1, n));
     if (n === cur) return;
+    var moving = n > cur ? cur : n;  // the sheet that turns
     cur = n;
-    pg0.classList.add("flipping");
-    pg0.classList.toggle("flipped", cur === 1);
-    setTimeout(function () { pg0.classList.remove("flipping"); }, 1100);
+    var pg = PAGES[moving];
+    pg.classList.add("flipping");
+    layout(moving);
+    setTimeout(function () { pg.classList.remove("flipping"); layout(-1); }, 1100);
     syncControls();
     bookMsg.textContent = "";
   }
   function openBook() {
-    cur = 0; pg0.classList.remove("flipped");
+    cur = 0; layout(-1);
     syncControls();
     bookMsg.textContent = "Tocca la pagina per sfogliare";
     book.hidden = false; burst(40);
   }
-  stage.addEventListener("click", function () { setPage(cur === 0 ? 1 : 0); });
-  prevPg.addEventListener("click", function () { setPage(0); });
-  nextPg.addEventListener("click", function () { setPage(1); });
+  stage.addEventListener("click", function () { setPage(cur === N - 1 ? 0 : cur + 1); });
+  prevPg.addEventListener("click", function () { setPage(cur - 1); });
+  nextPg.addEventListener("click", function () { setPage(cur + 1); });
   $("bookClose").addEventListener("click", function () { book.hidden = true; });
   var sx = null;
   stage.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
   stage.addEventListener("touchend", function (e) {
     if (sx === null) return;
     var dx = e.changedTouches[0].clientX - sx; sx = null;
-    if (Math.abs(dx) > 40) { e.preventDefault(); setPage(dx < 0 ? 1 : 0); }
+    if (Math.abs(dx) > 40) { e.preventDefault(); setPage(dx < 0 ? cur + 1 : cur - 1); }
   });
   savePg.addEventListener("click", function () {
     var f = FILES[cur];
