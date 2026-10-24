@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Laurea Gabri</title>
+<meta name="robots" content="noindex">
+<link rel="preload" as="image" href="gabri.webp">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500&display=swap">
+<style>
+/* Layout: one centered column — spinning laurel sticker, headline, video, personal collection */
+:root {
+  --bg: #12160f;
+  --surface: #1c2218;
+  --fg: #f3f1e6;
+  --muted: #a9ae98;
+  --laurel: #9fc25a;
+  --gold: #e8c45a;
+  --display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 60% at 50% 0%, #223019 0%, var(--bg) 60%) var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) 40px;
+  overflow-x: hidden;
+}
+#leaves { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+main { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; position: relative; }
+
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+.sticker {
+  width: 170px; max-width: 46vw; aspect-ratio: 558 / 640;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.55));
+  -webkit-tap-highlight-color: transparent;
+}
+.sticker img { width: 100%; height: 100%; display: block; }
+.sticker .in { width: 100%; height: 100%; animation: drop 1.3s cubic-bezier(.2,.9,.25,1.15) both; }
+.sticker .float { width: 100%; height: 100%; animation: bob 3.2s ease-in-out 1.3s infinite; }
+.sticker.spin .float { animation: spin .9s cubic-bezier(.3,.1,.3,1); }
+@keyframes drop {
+  0% { transform: translateY(-120vh) rotate(-720deg) scale(.4); }
+  70% { transform: translateY(10px) rotate(8deg) scale(1.05); }
+  100% { transform: translateY(0) rotate(0) scale(1); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0) scale(1); }
+  50% { transform: rotate(200deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.eyebrow {
+  font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--laurel); font-weight: 500; margin-top: 6px;
+}
+h1 {
+  font-family: var(--display); font-weight: 800; font-size: clamp(30px, 8vw, 44px);
+  line-height: 1.05; margin: 0; text-wrap: balance;
+}
+h1 em { font-style: normal; color: var(--gold); }
+p { margin: 0; color: var(--muted); }
+.note { text-align: center; }
+
+.frame {
+  background: var(--surface);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--laurel) 30%, transparent);
+}
+video { display: block; width: 100%; max-height: 72vh; background: #000; }
+
+.collection {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 14px 16px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--muted) 18%, transparent);
+}
+.collection .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.collection strong { font-family: var(--display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; }
+.collection strong span { color: var(--gold); }
+.collection small { color: var(--muted); font-size: 13px; }
+.bar { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--muted) 20%, transparent); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--laurel), var(--gold)); transition: width .8s ease; }
+.counter { display: flex; gap: 6px; flex-wrap: wrap; }
+.dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 12px; font-variant-numeric: tabular-nums;
+  border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
+  color: var(--muted);
+}
+.dot.found { background: color-mix(in srgb, var(--laurel) 25%, transparent); border-color: var(--laurel); color: var(--fg); }
+.dot.on { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 500; animation: pop .6s ease 1.2s both; }
+@keyframes pop { 0% { transform: scale(.4); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+.complete {
+  width: 100%; text-align: center; padding: 16px; border-radius: 16px; cursor: pointer;
+  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
+  border: 1px solid var(--gold); color: inherit; font: inherit;
+  animation: glow 1.8s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+.complete:active { transform: scale(.97); }
+.complete b { display: block; font-family: var(--display); font-weight: 800; font-size: 24px; color: var(--gold); }
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 0%, transparent); }
+  50% { box-shadow: 0 0 22px 2px color-mix(in srgb, var(--gold) 45%, transparent); }
+}
+
+/* Hero sticker dress-up: every tap adds an anime / kawaii accessory */
+.sticker .face { position: relative; width: 100%; height: 100%; }
+.sticker .face img, .sticker .face svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.sticker .face.boing { animation: boing .45s ease; }
+@keyframes boing { 0% { transform: scale(1); } 35% { transform: scale(1.08, .92); } 70% { transform: scale(.96, 1.04); } 100% { transform: scale(1); } }
+.sticker .acc { transform-box: fill-box; transform-origin: center; animation: accIn .5s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes accIn { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.tap-hint { font-size: 12px; color: var(--muted); margin-top: -2px; }
+
+/* Manga book viewer */
+#book {
+  position: fixed; inset: 0; z-index: 15;
+  background: radial-gradient(90% 70% at 50% 40%, #2a2420 0%, #0c0b0a 80%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  animation: bookIn .5s ease both;
+}
+@keyframes bookIn { from { opacity: 0; } to { opacity: 1; } }
+.stage { perspective: 2200px; width: min(88vw, calc((100vh - 200px) * 0.707)); aspect-ratio: 1600 / 2272; position: relative; }
+.page {
+  position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d;
+  transition: transform 1.1s cubic-bezier(.45,.05,.25,1); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.page .side { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 3px 8px 8px 3px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,.6); }
+.page .side img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.page .back { transform: rotateY(180deg); background: #e9e3d6; }
+.page .side::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.28), rgba(0,0,0,0) 7%); pointer-events: none; }
+.page.flipped { transform: rotateY(-178deg); }
+.page .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,.4)); opacity: 0; transition: opacity 1.1s; pointer-events: none; }
+.page.flipping .shade { opacity: 1; }
+.book-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.book-bar button {
+  font: 500 15px var(--body); color: var(--fg); cursor: pointer;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px; padding: 10px 16px; min-height: 44px;
+}
+.book-bar button:disabled { opacity: .35; cursor: default; }
+.book-bar .save { background: var(--gold); color: #1a1408; border-color: var(--gold); font-weight: 700; }
+.book-count { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: center; }
+.book-msg { color: var(--muted); font-size: 13px; min-height: 1.3em; text-align: center; max-width: 340px; }
+#bookClose {
+  position: absolute; top: max(14px, env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
+  width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; z-index: 2;
+  background: rgba(255,255,255,.14); color: #fff; font-size: 24px; line-height: 44px;
+}
+.complete small { display: block; color: var(--fg); font-size: 14px; margin-top: 2px; }
+
+.hint { font-size: 14px; text-align: center; }
+.gallery { display: flex; flex-direction: column; gap: 24px; }
+.item { display: flex; flex-direction: column; gap: 8px; }
+.item h2 {
+  font-family: var(--display); font-weight: 500; font-size: 18px; margin: 0;
+  color: var(--gold); font-variant-numeric: tabular-nums;
+}
+#intro {
+  position: fixed; inset: 0; z-index: 20;
+  background: #000;
+  transition: opacity .45s ease, transform .45s ease;
+}
+#intro img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; max-width: none;
+  object-fit: cover;
+}
+#intro.contain img { object-fit: contain; }
+#intro.out { opacity: 0; transform: scale(1.08); pointer-events: none; }
+body.intro .sticker .in { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .sticker .in, .sticker .float, .dot.on { animation: none !important; }
+  #leaves { display: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="leaves" aria-hidden="true"></canvas>
+<div id="intro" hidden><img id="introImg" alt=""></div>
+<div id="book" hidden>
+  <button id="bookClose" type="button" aria-label="Chiudi">&times;</button>
+  <div class="stage" id="stage">
+    <div class="page" id="pg2">
+      <div class="side front"><img src="manga/kawaii.jpg" alt="Gabri-chan kawaii"></div>
+      <div class="side back"></div>
+    </div>
+    <div class="page" id="pg1">
+      <div class="side front"><img src="manga/pagina.jpg" alt="Pagina manga"><div class="shade"></div></div>
+      <div class="side back"></div>
+    </div>
+    <div class="page" id="pg0">
+      <div class="side front"><img src="manga/copertina.jpg" alt="Copertina del manga"><div class="shade"></div></div>
+      <div class="side back"></div>
+    </div>
+  </div>
+  <div class="book-bar">
+    <button type="button" id="prevPg" aria-label="Pagina precedente">&lsaquo; Indietro</button>
+    <span class="book-count" id="pgCount">1 / 3</span>
+    <button type="button" id="nextPg" aria-label="Pagina successiva">Sfoglia &rsaquo;</button>
+  </div>
+  <div class="book-bar">
+    <button type="button" class="save" id="savePg">Salva copertina in galleria</button>
+  </div>
+  <div class="book-msg" id="bookMsg">Tocca la pagina per sfogliare</div>
+</div>
+<main>
+  <div class="hero">
+    <button class="sticker" id="sticker" type="button" aria-label="Tocca Gabri per aggiungere un accessorio">
+      <div class="in"><div class="float"><div class="face" id="face"><img src="gabri.webp" alt="Gabri con la corona d'alloro"><svg id="accs" viewBox="0 0 558 640" aria-hidden="true"></svg></div></div></div>
+    </button>
+    <div class="tap-hint">Tocca Gabri</div>
+    <div class="eyebrow" id="eyebrow">Laurea Gabri</div>
+    <h1 id="headline">Hai trovato un <em>video segreto</em></h1>
+  </div>
+
+  <div class="frame" id="frame" hidden>
+    <video id="player" controls playsinline preload="auto"></video>
+  </div>
+  <p class="hint" id="hint" hidden>Premi play e alza il volume.</p>
+
+  <button class="complete" id="complete" type="button" hidden>
+    <b>Li hai trovati tutti!</b>
+    <small>Apri il manga</small>
+  </button>
+
+  <section class="collection" id="collection" aria-label="La tua collezione">
+    <div class="row">
+      <strong id="score">0 di 17</strong>
+      <small>la tua collezione</small>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="counter" id="counter"></div>
+  </section>
+
+  <p class="note" id="note"></p>
+
+  <section class="gallery" id="gallery" hidden></section>
+</main>
+
+<script>
+(function () {
+  /* Video ids match the printed QR codes (#v1, #v3, ...); labels shown to guests are 1..TOTAL */
+  var IDS = [1, 3, 6, 7, 8, 9, 10, 12, 14, 15, 16, 17];
+  var TOTAL = IDS.length;
+  var KEY = "laurea-gabri-trovati";
+  function label(id) { return IDS.indexOf(id) + 1; }
+  var $ = function (id) { return document.getElementById(id); };
+  var player = $("player"), frame = $("frame"), headline = $("headline"), eyebrow = $("eyebrow"),
+      note = $("note"), hint = $("hint"), counter = $("counter"), gallery = $("gallery"),
+      score = $("score"), bar = $("bar"), complete = $("complete"), sticker = $("sticker");
+
+  function loadFound() { return IDS.slice(); }  /* edizione completa: tutto sbloccato, nulla salvato */
+  function loadFoundOld() {
+    try { return JSON.parse(localStorage.getItem(KEY) || "[]").filter(function (x) { return IDS.indexOf(x) >= 0; }); }
+    catch (e) { return []; }
+  }
+  function saveFound(list) {
+    return;
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function renderCollection(found, current) {
+    counter.innerHTML = "";
+    IDS.forEach(function (id) {
+      var d = document.createElement("span");
+      d.className = "dot" + (id === current ? " on" : (found.indexOf(id) >= 0 ? " found" : ""));
+      d.textContent = label(id);
+      counter.appendChild(d);
+    });
+    score.innerHTML = "<span>" + found.length + "</span> di " + TOTAL;
+    setTimeout(function () { bar.style.width = (found.length / TOTAL * 100) + "%"; }, 300);
+    complete.hidden = found.length < TOTAL;
+  }
+
+  var justCompleted = false;
+  function render() {
+    var m = (location.hash || "").match(/^#v(\d{1,2})$/);
+    var n = m ? parseInt(m[1], 10) : 0;
+    if (IDS.indexOf(n) < 0) n = 0;
+    var found = loadFound();
+
+    if (n) {
+      var isNew = true;
+      
+      eyebrow.textContent = "Laurea Gabri · Video " + label(n) + " di " + TOTAL;
+      headline.innerHTML = isNew ? "Hai trovato un <em>video segreto</em>" : "Questo l'avevi <em>già trovato</em>";
+      player.src = "video/video" + n + ".mp4";
+      frame.hidden = false;
+      hint.hidden = false;
+      gallery.hidden = true;
+      var left = TOTAL - found.length;
+      note.textContent = left > 0
+        ? "Mancano " + left + " video. Ci sono altri QR nascosti in giro per la festa."
+        : "";
+      note.hidden = left <= 0;
+    } else {
+      eyebrow.textContent = "Laurea Gabri · Edizione completa";
+      headline.innerHTML = "Tutti i <em>video segreti</em>";
+      frame.hidden = true;
+      hint.hidden = true;
+      player.removeAttribute("src");
+      note.hidden = false;
+      note.textContent = "Tutti i " + TOTAL + " video della festa in un posto solo.";
+      if (!gallery.childElementCount) {
+        IDS.forEach(function (j) {
+          var item = document.createElement("div");
+          item.className = "item";
+          var h = document.createElement("h2");
+          h.textContent = "Video " + label(j);
+          var f = document.createElement("div");
+          f.className = "frame";
+          var v = document.createElement("video");
+          v.controls = true;
+          v.setAttribute("playsinline", "");
+          v.preload = "metadata";
+          v.src = "video/video" + j + ".mp4#t=0.1";
+          f.appendChild(v);
+          item.appendChild(h);
+          item.appendChild(f);
+          gallery.appendChild(item);
+        });
+      }
+      gallery.hidden = false;
+    }
+    renderCollection(found, n);
+  }
+
+
+  /* Intro GIF after a QR scan, then the page opens by itself */
+  var intro = $("intro"), introImg = $("introImg"), INTRO_MS = 2850;
+  function playIntro(done) { playGif("intro.gif", INTRO_MS, false, done); }
+  var gifToken = 0;
+  function playGif(file, ms, contain, done) {
+    gifToken++;
+    intro.classList.toggle("contain", !!contain);
+    document.body.classList.add("intro");
+    intro.classList.remove("out");
+    intro.hidden = false;
+    var finished = false, started = false, t;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      clearTimeout(t);
+      intro.classList.add("out");
+      document.body.classList.remove("intro");
+      done();
+      var mine = gifToken;
+      setTimeout(function () { if (mine === gifToken) { intro.hidden = true; introImg.removeAttribute("src"); } }, 500);
+    }
+    function start() { if (started) return; started = true; clearTimeout(t); t = setTimeout(finish, ms); }
+    introImg.onload = start;
+    introImg.onerror = finish;
+    intro.onclick = finish;
+    t = setTimeout(finish, ms + 4000); /* slow connection: never block the page */
+    introImg.src = file + "?" + Date.now(); /* restart the GIF from frame one */
+  }
+  function afterIntro() {
+    if (justCompleted) {
+      justCompleted = false;
+      burst(45);
+      setTimeout(function () {
+        playGif("finale.gif", 9000, true, function () { burst(70); complete.scrollIntoView({ behavior: "smooth", block: "center" }); });
+      }, 450);
+    } else burst(45);
+  }
+  function hasVideoHash() {
+    var m = (location.hash || "").match(/^#v(\d{1,2})$/);
+    return !!m && IDS.indexOf(parseInt(m[1], 10)) >= 0;
+  }
+
+  window.addEventListener("hashchange", function () {
+    render(); window.scrollTo(0, 0);
+    if (hasVideoHash()) playIntro(afterIntro); else burst(45);
+  });
+  render();
+
+  /* Falling laurel leaves and gold confetti */
+  var canvas = $("leaves"), ctx = canvas.getContext("2d"), parts = [], running = false;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function resize() {
+    var r = window.devicePixelRatio || 1;
+    canvas.width = innerWidth * r; canvas.height = innerHeight * r;
+    ctx.setTransform(r, 0, 0, r, 0, 0);
+  }
+  resize(); window.addEventListener("resize", resize);
+  var greens = ["#6f9a3a", "#8ab54a", "#5c8530", "#a3c95e"];
+  var golds = ["#e8c45a", "#f2d77e", "#d9a93c"];
+  var endAt = 0, FADE = 400;
+  function burst(count) {
+    if (reduce) return;
+    endAt = performance.now() + 1800;
+    for (var i = 0; i < count; i++) {
+      var leaf = Math.random() < 0.7;
+      parts.push({
+        x: Math.random() * innerWidth,
+        y: -20 - Math.random() * innerHeight * 0.3,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: 4 + Math.random() * 3,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 0.08,
+        sway: Math.random() * Math.PI * 2,
+        size: leaf ? 10 + Math.random() * 10 : 4 + Math.random() * 4,
+        leaf: leaf,
+        color: leaf ? greens[i % greens.length] : golds[i % golds.length]
+      });
+    }
+    if (!running) { running = true; requestAnimationFrame(tick); }
+  }
+  function drawLeaf(p) {
+    var s = p.size;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s);
+    ctx.quadraticCurveTo(s * 0.55, 0, 0, s);
+    ctx.quadraticCurveTo(-s * 0.55, 0, 0, -s);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.25)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, -s * 0.9); ctx.lineTo(0, s * 0.9); ctx.stroke();
+  }
+  function tick(now) {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    var left = endAt + FADE - now;
+    if (left <= 0) parts.length = 0;
+    ctx.globalAlpha = Math.max(0, Math.min(1, left / FADE));
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.sway += 0.03;
+      p.x += p.vx + Math.sin(p.sway) * 0.8;
+      p.y += p.vy;
+      p.rot += p.vr;
+      if (p.y > innerHeight + 30) { parts.splice(i, 1); continue; }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      if (p.leaf) drawLeaf(p);
+      else { ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6); }
+      ctx.restore();
+    }
+    if (parts.length) requestAnimationFrame(tick);
+    else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+  /* Dress-up game behind the "Li hai trovati tutti!" banner */
+  var face = $("face"), accs = $("accs");
+
+  function star(cx, cy, r, c) {
+    var pts = [];
+    for (var i = 0; i < 10; i++) {
+      var a = Math.PI / 5 * i - Math.PI / 2, rr = i % 2 ? r * 0.45 : r;
+      pts.push((cx + Math.cos(a) * rr).toFixed(1) + "," + (cy + Math.sin(a) * rr).toFixed(1));
+    }
+    return '<polygon points="' + pts.join(" ") + '" fill="' + c + '" stroke="#e09b00" stroke-width="4" stroke-linejoin="round"/>';
+  }
+  function heart(cx, cy, s, c) {
+    return '<path d="M' + cx + ' ' + (cy + s * .6) + ' C' + (cx - s * 1.3) + ' ' + (cy - s * .2) + ' ' + (cx - s * .6) + ' ' + (cy - s) + ' ' + cx + ' ' + (cy - s * .35) +
+           ' C' + (cx + s * .6) + ' ' + (cy - s) + ' ' + (cx + s * 1.3) + ' ' + (cy - s * .2) + ' ' + cx + ' ' + (cy + s * .6) + ' Z" fill="' + c + '" fill-opacity=".85" stroke="#c2185b" stroke-width="5"/>';
+  }
+  function spark(cx, cy, r) {
+    return '<path d="M' + cx + ' ' + (cy - r) + ' Q' + cx + ' ' + cy + ' ' + (cx + r) + ' ' + cy + ' Q' + cx + ' ' + cy + ' ' + cx + ' ' + (cy + r) +
+           ' Q' + cx + ' ' + cy + ' ' + (cx - r) + ' ' + cy + ' Q' + cx + ' ' + cy + ' ' + cx + ' ' + (cy - r) + ' Z" fill="#fff6a8"/>';
+  }
+  function flower(cx, cy, r) {
+    var g = "";
+    for (var i = 0; i < 5; i++) {
+      g += '<ellipse cx="' + cx + '" cy="' + (cy - r * .55) + '" rx="' + (r * .38) + '" ry="' + (r * .55) + '" fill="#ffb7d5" transform="rotate(' + (72 * i) + ' ' + cx + ' ' + cy + ')"/>';
+    }
+    return g + '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * .22) + '" fill="#ff6fae"/>';
+  }
+  function bubble(t) {
+    return '<g class="acc"><path d="M-10 360 h200 a24 24 0 0 1 24 24 v40 a24 24 0 0 1 -24 24 h-120 l-30 30 v-30 h-50 a24 24 0 0 1 -24 -24 v-40 a24 24 0 0 1 24 -24 Z" fill="#fff" stroke="#222" stroke-width="5"/>' +
+           '<text x="90" y="420" text-anchor="middle" font-size="' + (t.length > 5 ? 30 : 38) + '" font-weight="900" fill="#e0245e" font-family="sans-serif">' + t + '</text></g>';
+  }
+
+  var A = {
+    hat: '<g class="acc"><g transform="translate(0 -120)"><ellipse cx="290" cy="215" rx="275" ry="62" fill="#e9c46a" stroke="#a87d2a" stroke-width="6"/>' +
+         '<path d="M150 210 Q155 40 290 35 Q425 40 430 210 Z" fill="#f2d27a" stroke="#a87d2a" stroke-width="6"/>' +
+         '<path d="M152 175 Q290 205 428 175 L430 210 Q290 240 150 210 Z" fill="#c0392b"/>' +
+         '<path d="M180 120 Q290 100 400 120 M170 150 Q290 130 410 150" stroke="#c9a24a" stroke-width="4" fill="none"/></g></g>',
+    ears: '<g class="acc"><path d="M150 150 L175 0 L270 95 Z" fill="#2b2b33" stroke="#111" stroke-width="5"/><path d="M175 120 L188 45 L240 98 Z" fill="#ff9ec7"/>' +
+          '<path d="M440 150 L405 0 L315 95 Z" fill="#2b2b33" stroke="#111" stroke-width="5"/><path d="M415 120 L400 45 L345 98 Z" fill="#ff9ec7"/></g>',
+    band: '<g class="acc"><path d="M168 180 Q290 150 425 180 L425 222 Q290 192 168 222 Z" fill="#fafafa" stroke="#ccc" stroke-width="3"/>' +
+          '<circle cx="296" cy="192" r="17" fill="#d62828"/>' +
+          '<text x="232" y="204" font-size="28" font-weight="900" fill="#111" font-family="sans-serif">必</text>' +
+          '<text x="322" y="204" font-size="28" font-weight="900" fill="#111" font-family="sans-serif">勝</text>' +
+          '<path d="M425 195 L500 160 L490 205 Z M425 205 L505 240 L470 250 Z" fill="#fafafa" stroke="#ccc" stroke-width="3"/></g>',
+    bow: '<g class="acc"><path d="M420 70 L360 30 L362 115 Z M420 70 L480 30 L478 115 Z" fill="#ff6fae" stroke="#d94b8c" stroke-width="5"/><circle cx="420" cy="72" r="16" fill="#ff9ec7" stroke="#d94b8c" stroke-width="5"/></g>',
+    stars: '<g class="acc">' + star(240, 250, 46, "#ffd23f") + star(346, 250, 46, "#ffd23f") + '</g>',
+    hearts: '<g class="acc">' + heart(240, 252, 44, "#ff4f9a") + heart(346, 252, 44, "#ff4f9a") +
+            '<path d="M276 245 Q293 232 310 245" stroke="#ff4f9a" stroke-width="7" fill="none"/></g>',
+    blush: '<g class="acc"><ellipse cx="205" cy="315" rx="38" ry="20" fill="#ff7aa8" opacity=".75"/><ellipse cx="392" cy="315" rx="38" ry="20" fill="#ff7aa8" opacity=".75"/>' +
+           '<path d="M188 305 l-8 16 M205 305 l-8 16 M222 305 l-8 16 M375 305 l-8 16 M392 305 l-8 16 M409 305 l-8 16" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>',
+    sweat: '<g class="acc"><path d="M455 150 Q430 200 455 215 Q480 200 455 150 Z" fill="#7cc7ff" stroke="#2f7fc1" stroke-width="5"/><path d="M450 185 Q447 198 455 205" stroke="#fff" stroke-width="4" fill="none"/></g>',
+    anger: '<g class="acc" stroke="#e01e37" stroke-width="10" stroke-linecap="round" fill="none"><path d="M415 120 Q440 135 438 110 M455 108 Q440 133 465 130 M465 150 Q440 135 442 160 M425 162 Q440 137 415 140"/></g>',
+    bubble1: bubble("すごい!"),
+    bubble2: bubble("おめでとう!"),
+    bubble3: bubble("かわいい!"),
+    sparkle: '<g class="acc">' + spark(60, 120, 30) + spark(510, 300, 24) + spark(95, 470, 20) + spark(470, 60, 18) + spark(520, 520, 26) + '</g>',
+    sakura: '<g class="acc">' + flower(60, 250, 26) + flower(500, 400, 30) + flower(130, 560, 22) + flower(30, 380, 18) + flower(530, 180, 20) + '</g>',
+    onigiri: '<g class="acc"><g transform="rotate(-12 470 560)"><path d="M470 490 Q520 560 520 590 Q470 610 420 590 Q420 560 470 490 Z" fill="#fff" stroke="#999" stroke-width="5"/>' +
+             '<rect x="445" y="560" width="50" height="38" rx="6" fill="#1f3b2d"/>' +
+             '<circle cx="458" cy="545" r="4" fill="#333"/><circle cx="482" cy="545" r="4" fill="#333"/><path d="M462 553 Q470 560 478 553" stroke="#333" stroke-width="3" fill="none"/></g></g>'
+  };
+  var SLOT = { hat: "head", ears: "head", band: "head", bow: "bow", stars: "eyes", hearts: "eyes", blush: "cheeks",
+               sweat: "temple", anger: "temple", bubble1: "bubble", bubble2: "bubble", bubble3: "bubble",
+               sparkle: "deco", sakura: "deco", onigiri: "hand" };
+  var ORDER = ["hat", "blush", "stars", "bubble1", "sparkle", "sweat", "ears", "hearts", "bow", "onigiri",
+               "band", "anger", "bubble2", "sakura", "bubble3"];
+  var LAYERS = ["deco", "hand", "head", "bow", "eyes", "cheeks", "temple", "bubble"];
+  var step = 0, worn = {};
+
+  function drawAccs() {
+    accs.innerHTML = LAYERS.map(function (sl) { return worn[sl] ? A[worn[sl]] : ""; }).join("");
+  }
+  sticker.addEventListener("click", function () {
+    if (step >= ORDER.length) { step = 0; worn = {}; }
+    var k = ORDER[step++];
+    worn[SLOT[k]] = k;
+    drawAccs();
+    face.classList.remove("boing"); void face.offsetWidth; face.classList.add("boing");
+    burst(14);
+  });
+
+  /* Manga book: cover + page, flip animation, save to gallery */
+  var book = $("book"), pgCount = $("pgCount"), prevPg = $("prevPg"), nextPg = $("nextPg"),
+      savePg = $("savePg"), bookMsg = $("bookMsg"), stage = $("stage"), cur = 0;
+  var PAGES = [$("pg0"), $("pg1"), $("pg2")], N = PAGES.length;
+  var FILES = [
+    { src: "manga/copertina.jpg", name: "Laurea_Gabri_copertina.jpg", label: "Salva copertina in galleria" },
+    { src: "manga/pagina.jpg", name: "Laurea_Gabri_manga.jpg", label: "Salva in galleria" },
+    { src: "manga/kawaii.jpg", name: "Gabri_chan_kawaii.jpg", label: "Salva in galleria" }
+  ];
+  function layout(moving) {
+    PAGES.forEach(function (pg, i) {
+      pg.classList.toggle("flipped", i < cur);
+      pg.style.zIndex = i === moving ? 3 * N : (i < cur ? i + 1 : 2 * N - i);
+    });
+  }
+  function syncControls() {
+    pgCount.textContent = (cur + 1) + " / " + N;
+    prevPg.disabled = cur === 0; nextPg.disabled = cur === N - 1;
+    savePg.textContent = FILES[cur].label;
+  }
+  function setPage(n) {
+    n = Math.max(0, Math.min(N - 1, n));
+    if (n === cur) return;
+    var moving = n > cur ? cur : n;  // the sheet that turns
+    cur = n;
+    var pg = PAGES[moving];
+    pg.classList.add("flipping");
+    layout(moving);
+    setTimeout(function () { pg.classList.remove("flipping"); layout(-1); }, 1100);
+    syncControls();
+    bookMsg.textContent = "";
+  }
+  function openBook() {
+    cur = 0; layout(-1);
+    syncControls();
+    bookMsg.textContent = "Tocca la pagina per sfogliare";
+    book.hidden = false; burst(40);
+  }
+  stage.addEventListener("click", function () { setPage(cur === N - 1 ? 0 : cur + 1); });
+  prevPg.addEventListener("click", function () { setPage(cur - 1); });
+  nextPg.addEventListener("click", function () { setPage(cur + 1); });
+  $("bookClose").addEventListener("click", function () { book.hidden = true; });
+  var sx = null;
+  stage.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener("touchend", function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 40) { e.preventDefault(); setPage(dx < 0 ? cur + 1 : cur - 1); }
+  });
+  savePg.addEventListener("click", function () {
+    var f = FILES[cur];
+    bookMsg.textContent = "Preparo l'immagine...";
+    fetch(f.src).then(function (r) { return r.blob(); }).then(function (blob) {
+      var file = null;
+      try { file = new File([blob], f.name, { type: "image/jpeg" }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file] }).then(function () {
+          bookMsg.textContent = "Fatto! Se te lo chiede, scegli “Salva immagine”.";
+        });
+      }
+      var url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      bookMsg.textContent = "Immagine scaricata. Se non la trovi, tieni premuto sulla pagina e scegli “Salva immagine”.";
+    }).catch(function (err) {
+      if (err && err.name === "AbortError") { bookMsg.textContent = ""; return; }
+      bookMsg.textContent = "Non riesco a salvarla da qui: tieni premuto sulla pagina e scegli “Salva immagine”.";
+    });
+  });
+  complete.addEventListener("click", openBook);
+
+  /*BOOT*/
+  if (hasVideoHash()) playIntro(afterIntro);
+  else burst(45);
+})();
+</script>
+</body>
+</html>
