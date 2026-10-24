@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Laurea Gabri</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500&display=swap">
+<style>
+/* Layout: one centered column, a laurel-green "found it" header above a single phone-sized video */
+:root {
+  --bg: #12160f;
+  --surface: #1c2218;
+  --fg: #f3f1e6;
+  --muted: #a9ae98;
+  --laurel: #9fc25a;
+  --gold: #e8c45a;
+  --display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+*{box-sizing:border-box}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: max(28px, env(safe-area-inset-top, 0px)) 40px;
+  margin: 0;
+}
+main { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.eyebrow {
+  font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--laurel); font-weight: 500;
+}
+h1 {
+  font-family: var(--display); font-weight: 800; font-size: clamp(30px, 8vw, 44px);
+  line-height: 1.05; margin: 4px 0 0; text-wrap: balance;
+}
+h1 em { font-style: normal; color: var(--gold); }
+p { margin: 0; color: var(--muted); }
+.frame {
+  background: var(--surface);
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--laurel) 30%, transparent);
+}
+video { display: block; width: 100%; max-height: 72vh; background: #000; }
+.counter {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+}
+.dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 12px; font-variant-numeric: tabular-nums;
+  border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
+  color: var(--muted);
+}
+.dot.on { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 500; }
+.hint { font-size: 14px; }
+.gallery { display: flex; flex-direction: column; gap: 24px; }
+.item { display: flex; flex-direction: column; gap: 8px; }
+.item h2 {
+  font-family: var(--display); font-weight: 500; font-size: 18px; margin: 0;
+  color: var(--gold); font-variant-numeric: tabular-nums;
+}
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <div class="eyebrow" id="eyebrow">Laurea Gabri</div>
+    <h1 id="headline">Hai trovato un <em>video segreto</em></h1>
+  </div>
+
+  <div class="frame" id="frame" hidden>
+    <video id="player" controls playsinline preload="auto"></video>
+  </div>
+
+  <p id="note">Ci sono altri QR nascosti in giro per la festa. Trovali tutti.</p>
+
+  <div class="counter" id="counter" aria-label="Video da trovare"></div>
+  <p class="hint" id="hint">Premi play e alza il volume.</p>
+
+  <section class="gallery" id="gallery" hidden></section>
+</main>
+
+<script>
+(function () {
+  var TOTAL = 17;
+  var player = document.getElementById("player");
+  var frame = document.getElementById("frame");
+  var headline = document.getElementById("headline");
+  var eyebrow = document.getElementById("eyebrow");
+  var note = document.getElementById("note");
+  var hint = document.getElementById("hint");
+  var counter = document.getElementById("counter");
+  var gallery = document.getElementById("gallery");
+
+  function render() {
+    var m = (location.hash || "").match(/^#v(\d{1,2})$/);
+    var n = m ? parseInt(m[1], 10) : 0;
+    if (n < 1 || n > TOTAL) n = 0;
+    counter.innerHTML = "";
+    for (var i = 1; i <= TOTAL; i++) {
+      var d = document.createElement("span");
+      d.className = "dot" + (i === n ? " on" : "");
+      d.textContent = i;
+      counter.appendChild(d);
+    }
+    if (n) {
+      eyebrow.textContent = "Laurea Gabri · Video " + n + " di " + TOTAL;
+      headline.innerHTML = "Hai trovato un <em>video segreto</em>";
+      player.src = "video/video" + n + ".mp4";
+      frame.hidden = false;
+      hint.hidden = false;
+      note.textContent = "Ci sono altri QR nascosti in giro per la festa. Trovali tutti.";
+      gallery.hidden = true;
+      counter.hidden = false;
+    } else {
+      eyebrow.textContent = "Laurea Gabri";
+      headline.innerHTML = "Tutti i <em>video segreti</em>";
+      frame.hidden = true;
+      hint.hidden = true;
+      counter.hidden = true;
+      player.removeAttribute("src");
+      note.textContent = "Tutti i " + TOTAL + " video della festa in un posto solo.";
+      if (!gallery.childElementCount) {
+        for (var j = 1; j <= TOTAL; j++) {
+          var item = document.createElement("div");
+          item.className = "item";
+          var h = document.createElement("h2");
+          h.textContent = "Video " + j;
+          var f = document.createElement("div");
+          f.className = "frame";
+          var v = document.createElement("video");
+          v.controls = true;
+          v.setAttribute("playsinline", "");
+          v.preload = "metadata";
+          v.src = "video/video" + j + ".mp4#t=0.1";
+          f.appendChild(v);
+          item.appendChild(h);
+          item.appendChild(f);
+          gallery.appendChild(item);
+        }
+      }
+      gallery.hidden = false;
+    }
+  }
+  window.addEventListener("hashchange", render);
+  render();
+})();
+</script>
+</body>
+</html>
